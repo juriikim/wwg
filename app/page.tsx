@@ -1,13 +1,19 @@
-import Main from "@/components/layout/main";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import SideBar from "@/components/layout/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import Header from "@/components/layout/header";
+import Footer from "@/components/layout/footer";
 
 export default function Home() {
   return (
-    <main>
+    <div>
       <SidebarProvider>
-        <Main />
-        <SidebarTrigger />
+        <SideBar />
+        <div className="flex w-full flex-col">
+          <Header />
+          <main className="grow">main</main>
+          <Footer />
+        </div>
       </SidebarProvider>
-    </main>
+    </div>
   );
 }
