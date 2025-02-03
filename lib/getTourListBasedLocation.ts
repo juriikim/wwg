@@ -1,3 +1,4 @@
+import { TourRootType } from "@/types/tourTypes";
 import { getTourApiUrl } from "./getTourApiUrl";
 
 export const getTourListBasedLocation = async (
@@ -20,6 +21,6 @@ export const getTourListBasedLocation = async (
   };
   const url = getTourApiUrl("locationBasedList1", params);
   const res = await fetch(url);
-  const data = await res.json();
-  return data;
+  const data: TourRootType = await res.json();
+  return data.response.body.items.item;
 };
