@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import Script from "next/script";
 import { useEffect, useRef } from "react";
@@ -12,6 +13,14 @@ export default function KakaoMap() {
   const mapDivRef = useRef(null);
   const defaultPosition = { x: 37.578611, y: 126.977222 };
   const mapRef = useRef<any>(null);
+  const marker = useRef<any>(null);
+
+  const drawMarker = (x: number, y: number) => {
+    marker.current = new window.kakao.maps.Marker({
+      position: new window.kakao.maps.LatLng(x, y),
+    });
+    marker.current.setMap(mapRef.current);
+  };
 
   const moveMap = (x: number, y: number) => {
     const moveLocation = new window.kakao.maps.LatLng(x, y);
@@ -21,6 +30,7 @@ export default function KakaoMap() {
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(({ coords }) => {
       moveMap(coords.latitude, coords.longitude);
+      drawMarker(coords.latitude, coords.longitude);
     });
   }, []);
 
