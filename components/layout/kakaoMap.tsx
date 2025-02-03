@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+import { getTourListBasedLocation } from "@/lib/getTourListBasedLocation";
 import Script from "next/script";
 import { useEffect, useRef } from "react";
 
@@ -28,9 +29,17 @@ export default function KakaoMap() {
   };
 
   useEffect(() => {
+    const position = { x: 0, y: 0 };
+    const fetch = async (x: number, y: number) => {
+      await getTourListBasedLocation(x, y);
+    };
+
     navigator.geolocation.getCurrentPosition(({ coords }) => {
+      position.x = coords.latitude;
+      position.y = coords.longitude;
       moveMap(coords.latitude, coords.longitude);
       drawMarker(coords.latitude, coords.longitude);
+      fetch(position.x, position.y);
     });
   }, []);
 
@@ -38,7 +47,7 @@ export default function KakaoMap() {
     <>
       <div ref={mapDivRef} className="h-full w-full"></div>
       <Script
-        src={process.env.NEXT_PUBLIC_MAP_URL}
+        src={process.env.NEXT_PUBLIC_MAP_API_URL}
         onLoad={() => {
           window.kakao.maps.load(() => {
             mapRef.current = new window.kakao.maps.Map(mapDivRef.current, {
