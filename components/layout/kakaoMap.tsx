@@ -4,7 +4,7 @@ import { getTourListBasedLocation } from "@/lib/getTourListBasedLocation";
 import { KakaoMapAddressResponseType } from "@/types/kakaoMapTypes";
 import { TourItemType } from "@/types/tourTypes";
 import Script from "next/script";
-import { Dispatch, SetStateAction, useEffect, useRef } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 
 declare global {
   interface Window {
@@ -26,6 +26,7 @@ export default function KakaoMap({
   const mapDivRef = useRef(null);
   const defaultPosition = { lat: 37.578611, lng: 126.977222 };
   const mapRef = useRef<any>(null);
+  const [isLoad, setIsLoad] = useState(false);
 
   // lat: 위도, lng: 경도
   // api에서 제공하는 변수 mapy: 위도, mapx: 경도
@@ -57,6 +58,8 @@ export default function KakaoMap({
   };
 
   useEffect(() => {
+    if (!isLoad) return;
+
     const position = { lat: 0, lng: 0 };
     const fetch = async (lat: number, lng: number) => {
       const data = await getTourListBasedLocation(lat, lng);
@@ -80,7 +83,7 @@ export default function KakaoMap({
       },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isLoad]);
 
   useEffect(() => {
     if (!Array.isArray(tourList)) return;
@@ -104,6 +107,7 @@ export default function KakaoMap({
               level: 5,
             });
           });
+          setIsLoad(!isLoad);
         }}
       ></Script>
     </>

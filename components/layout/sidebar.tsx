@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { LocateFixed } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -22,7 +23,13 @@ export default function SideBar({ tourList, currentAddress }: SideBarProps) {
   return (
     <Sidebar>
       <SidebarContent>
-        <SidebarHeader>{currentAddress} 주변 관광지 목록</SidebarHeader>
+        <SidebarHeader className="sticky top-0 z-10 bg-white px-4 py-7 shadow-md">
+          <strong className="flex text-xl">
+            <LocateFixed />
+            <span className="pl-2">{currentAddress}</span>
+          </strong>
+          <p>주변 관광지 목록을 확인해 보세요!</p>
+        </SidebarHeader>
         <SidebarGroup>
           {/* <SidebarGroupLabel>주변 관광지</SidebarGroupLabel> */}
           <SidebarGroupContent>
