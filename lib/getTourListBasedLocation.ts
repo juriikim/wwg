@@ -2,8 +2,8 @@ import { TourRootType } from "@/types/tourTypes";
 import { getTourApiUrl } from "./getTourApiUrl";
 
 export const getTourListBasedLocation = async (
-  x: number,
-  y: number,
+  lat: number,
+  lng: number,
   r?: number,
 ) => {
   const params = {
@@ -14,8 +14,8 @@ export const getTourListBasedLocation = async (
     MobileApp: "AppTest",
     listYN: "Y",
     arrange: "A",
-    mapX: x,
-    mapY: y,
+    mapX: lng,
+    mapY: lat,
     radius: r || 1000,
     contentTypeId: 15,
   };
