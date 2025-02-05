@@ -4,10 +4,10 @@ const nextConfig: NextConfig = {
   /* config options here */
   images: {
     remotePatterns: [
-      // {
-      //   protocol: "http",
-      //   hostname: "localhost",
-      // },
+      {
+        protocol: "http",
+        hostname: "tong.visitkorea.or.kr",
+      },
     ],
   },
 };
