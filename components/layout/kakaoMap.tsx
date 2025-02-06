@@ -5,6 +5,9 @@ import { KakaoMapAddressResponseType } from "@/types/kakaoMapTypes";
 import { TourItemType } from "@/types/tourTypes";
 import Script from "next/script";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import marker_red from "@/asset/mapPin_red.png";
+import marker_blue from "@/asset/mapPin_blue.png";
+import { StaticImageData } from "next/image";
 
 declare global {
   interface Window {
@@ -30,9 +33,20 @@ export default function KakaoMap({
 
   // lat: 위도, lng: 경도
   // api에서 제공하는 변수 mapy: 위도, mapx: 경도
-  const drawMarker = (lat: number, lng: number) => {
+  const drawMarker = (lat: number, lng: number, imageData: StaticImageData) => {
+    const markerImage = new window.kakao.maps.MarkerImage(
+      imageData.src,
+      new window.kakao.maps.Size(imageData.width, imageData.height),
+      {
+        offset: new window.kakao.maps.Point(
+          imageData.width / 2,
+          imageData.height,
+        ),
+      },
+    );
     const marker = new window.kakao.maps.Marker({
       position: new window.kakao.maps.LatLng(lat, lng),
+      image: markerImage,
     });
     marker.setMap(mapRef.current);
   };
@@ -72,12 +86,12 @@ export default function KakaoMap({
         position.lat = coords.latitude;
         position.lng = coords.longitude;
         moveMap(coords.latitude, coords.longitude);
-        drawMarker(coords.latitude, coords.longitude);
+        drawMarker(coords.latitude, coords.longitude, marker_blue);
         fetch(position.lat, position.lng);
       },
       (error) => {
         console.log(error);
-        drawMarker(defaultPosition.lat, defaultPosition.lng);
+        drawMarker(defaultPosition.lat, defaultPosition.lng, marker_blue);
         fetch(defaultPosition.lat, defaultPosition.lng);
         getAddress(defaultPosition.lat, defaultPosition.lng, setAddress);
       },
@@ -88,7 +102,7 @@ export default function KakaoMap({
   useEffect(() => {
     if (!Array.isArray(tourList)) return;
     tourList.map((tour: TourItemType) => {
-      drawMarker(+tour.mapy, +tour.mapx);
+      drawMarker(+tour.mapy, +tour.mapx, marker_red);
     });
   }, [tourList]);
 
