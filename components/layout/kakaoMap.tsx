@@ -47,6 +47,7 @@ export default function KakaoMap({
     const marker = new window.kakao.maps.Marker({
       position: new window.kakao.maps.LatLng(lat, lng),
       image: markerImage,
+      clickable: true,
     });
     marker.setMap(mapRef.current);
 
@@ -54,6 +55,7 @@ export default function KakaoMap({
     const infowindow = new window.kakao.maps.InfoWindow({
       position: new window.kakao.maps.LatLng(lat, lng),
       content: content,
+      removable: true,
     });
 
     window.kakao.maps.event.addListener(marker, "click", function () {
