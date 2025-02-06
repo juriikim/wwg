@@ -49,6 +49,16 @@ export default function KakaoMap({
       image: markerImage,
     });
     marker.setMap(mapRef.current);
+
+    const content = `<div>왜안됨</div>`;
+    const infowindow = new window.kakao.maps.InfoWindow({
+      position: new window.kakao.maps.LatLng(lat, lng),
+      content: content,
+    });
+
+    window.kakao.maps.event.addListener(marker, "click", function () {
+      infowindow.open(mapRef.current, marker);
+    });
   };
 
   const moveMap = (lat: number, lng: number) => {
@@ -76,7 +86,7 @@ export default function KakaoMap({
 
     const position = { lat: 0, lng: 0 };
     const fetch = async (lat: number, lng: number) => {
-      const data = await getTourListBasedLocation(lat, lng);
+      const data = await getTourListBasedLocation(lat, lng, undefined, 1, 15);
       console.log(data);
       setTourList(data);
     };
