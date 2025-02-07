@@ -10,28 +10,28 @@ import { getTourApiUrl } from "./getTourApiUrl";
  * @param rows 개수
  * @returns 주변 관광지 정보보
  */
-export const getTourListBasedLocation = async (
-  lat: number,
-  lng: number,
-  r: number = 1000,
-  page: number = 1,
-  rows: number = 10,
-) => {
-  const params = {
-    numOfRows: rows,
+export const getTourListBasedLocation = async (params: {
+  lat: number;
+  lng: number;
+  r?: number | undefined;
+  page: number;
+  rows: number;
+}) => {
+  const requestParams = {
+    numOfRows: params.rows,
     _type: "json",
-    pageNo: page,
+    pageNo: params.page,
     MobileOS: "ETC",
     MobileApp: "AppTest",
     listYN: "Y",
     arrange: "A",
-    mapX: lng,
-    mapY: lat,
-    radius: r,
+    mapX: params.lng,
+    mapY: params.lat,
+    radius: params.r || 1000,
     contentTypeId: 15,
   };
-  const url = getTourApiUrl("locationBasedList1", params);
+  const url = getTourApiUrl("locationBasedList1", requestParams);
   const res = await fetch(url);
   const data: TourRootType = await res.json();
-  return data.response.body.items.item;
+  return data.response.body.items.item ? data.response.body.items.item : "";
 };

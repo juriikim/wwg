@@ -8,6 +8,7 @@ import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import marker_red from "@/asset/mapPin_red.png";
 import marker_blue from "@/asset/mapPin_blue.png";
 import { StaticImageData } from "next/image";
+import { TourParamType } from "@/app/page";
 
 declare global {
   interface Window {
@@ -19,12 +20,16 @@ interface KakaoMapProps {
   tourList: TourItemType[] | "";
   setTourList: Dispatch<SetStateAction<"" | TourItemType[]>>;
   setCurrentAddress: Dispatch<SetStateAction<string>>;
+  tourParam: TourParamType;
+  setTourParam: Dispatch<SetStateAction<TourParamType>>;
 }
 
 export default function KakaoMap({
   tourList,
   setTourList,
   setCurrentAddress,
+  tourParam,
+  setTourParam,
 }: KakaoMapProps) {
   const mapDivRef = useRef(null);
   const defaultPosition = { lat: 37.578611, lng: 126.977222 };
@@ -33,7 +38,12 @@ export default function KakaoMap({
 
   // lat: 위도, lng: 경도
   // api에서 제공하는 변수 mapy: 위도, mapx: 경도
-  const drawMarker = (lat: number, lng: number, imageData: StaticImageData) => {
+  const drawMarker = (
+    lat: number,
+    lng: number,
+    imageData: StaticImageData,
+    tour?: TourItemType,
+  ) => {
     const markerImage = new window.kakao.maps.MarkerImage(
       imageData.src,
       new window.kakao.maps.Size(imageData.width, imageData.height),
@@ -51,7 +61,8 @@ export default function KakaoMap({
     });
     marker.setMap(mapRef.current);
 
-    const content = `<div>왜안됨</div>`;
+    if (!tour) return;
+    const content = `<div>${tour.title}</div>`;
     const infowindow = new window.kakao.maps.InfoWindow({
       position: new window.kakao.maps.LatLng(lat, lng),
       content: content,
@@ -88,7 +99,15 @@ export default function KakaoMap({
 
     const position = { lat: 0, lng: 0 };
     const fetch = async (lat: number, lng: number) => {
-      const data = await getTourListBasedLocation(lat, lng, undefined, 1, 15);
+      const copy = {
+        lat: lat,
+        lng: lng,
+        r: tourParam.r,
+        page: tourParam.page + 1,
+        rows: tourParam.rows,
+      };
+      setTourParam(copy);
+      const data = await getTourListBasedLocation(copy);
       console.log(data);
       setTourList(data);
     };
@@ -114,7 +133,7 @@ export default function KakaoMap({
   useEffect(() => {
     if (!Array.isArray(tourList)) return;
     tourList.map((tour: TourItemType) => {
-      drawMarker(+tour.mapy, +tour.mapx, marker_red);
+      drawMarker(+tour.mapy, +tour.mapx, marker_red, tour);
     });
   }, [tourList]);
 
