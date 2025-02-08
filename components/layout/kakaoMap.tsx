@@ -4,11 +4,10 @@ import { getTourListBasedLocation } from "@/lib/getTourListBasedLocation";
 import { KakaoMapAddressResponseType } from "@/types/kakaoMapTypes";
 import { TourItemType } from "@/types/tourTypes";
 import Script from "next/script";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import marker_red from "@/asset/mapPin_red.png";
 import marker_blue from "@/asset/mapPin_blue.png";
 import { StaticImageData } from "next/image";
-import { TourParamType } from "@/app/page";
 import { useTourListStore } from "@/store/useTourListStore";
 
 declare global {
@@ -17,19 +16,13 @@ declare global {
   }
 }
 
-interface KakaoMapProps {
-  setCurrentAddress: Dispatch<SetStateAction<string>>;
-  tourParam: TourParamType;
-  setTourParam: Dispatch<SetStateAction<TourParamType>>;
-}
-
-export default function KakaoMap({
-  setCurrentAddress,
-  tourParam,
-  setTourParam,
-}: KakaoMapProps) {
+export default function KakaoMap() {
   const tourList = useTourListStore((state) => state.tourList);
   const addTourList = useTourListStore((state) => state.addTourList);
+  const changePosition = useTourListStore((state) => state.changePosition);
+  const setCurrentAddress = useTourListStore(
+    (state) => state.setCurrentAddress,
+  );
 
   const mapDivRef = useRef(null);
   const defaultPosition = { lat: 37.578611, lng: 126.977222 };
@@ -90,24 +83,16 @@ export default function KakaoMap({
 
   const setAddress = (obj: KakaoMapAddressResponseType[]) => {
     const data = obj;
-    console.log(data);
     setCurrentAddress(data[0].address.address_name);
   };
 
   useEffect(() => {
     if (!isLoad) return;
 
-    const position = { lat: 0, lng: 0 };
     const fetch = async (lat: number, lng: number) => {
-      const copy = {
-        lat: lat,
-        lng: lng,
-        r: tourParam.r,
-        page: tourParam.page + 1,
-        rows: tourParam.rows,
-      };
-      setTourParam(copy);
-      const data = await getTourListBasedLocation(copy);
+      changePosition(lat, lng);
+      const currentState = useTourListStore.getState().tourParam;
+      const data = await getTourListBasedLocation(currentState);
       if (data) {
         addTourList(data);
       }
@@ -115,11 +100,9 @@ export default function KakaoMap({
 
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
-        position.lat = coords.latitude;
-        position.lng = coords.longitude;
         moveMap(coords.latitude, coords.longitude);
         drawMarker(coords.latitude, coords.longitude, marker_blue);
-        fetch(position.lat, position.lng);
+        fetch(coords.latitude, coords.longitude);
       },
       (error) => {
         console.log(error);

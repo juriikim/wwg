@@ -13,24 +13,15 @@ import {
 } from "../ui/sidebar";
 import rectangleImg from "@/asset/rectangle.png";
 import { useInView } from "react-intersection-observer";
-import { Dispatch, SetStateAction, useEffect } from "react";
-import { TourParamType } from "@/app/page";
+import { useEffect } from "react";
 import { getTourListBasedLocation } from "@/lib/getTourListBasedLocation";
 import { useTourListStore } from "@/store/useTourListStore";
 
-interface SideBarProps {
-  currentAddress: string;
-  tourParam: TourParamType;
-  setTourParam: Dispatch<SetStateAction<TourParamType>>;
-}
-
-export default function SideBar({
-  currentAddress,
-  tourParam,
-  setTourParam,
-}: SideBarProps) {
+export default function SideBar() {
   const tourList = useTourListStore((state) => state.tourList);
   const addTourList = useTourListStore((state) => state.addTourList);
+  const addPage = useTourListStore((state) => state.addPage);
+  const currentAddress = useTourListStore((state) => state.currentAddress);
 
   const { ref: divRef, inView: divInView } = useInView({
     threshold: 1,
@@ -38,10 +29,9 @@ export default function SideBar({
 
   useEffect(() => {
     const fetch = async () => {
-      const copy = tourParam;
-      copy.page = tourParam.page + 1;
-      setTourParam(copy);
-      const data = await getTourListBasedLocation(copy);
+      addPage();
+      const currentState = useTourListStore.getState().tourParam;
+      const data = await getTourListBasedLocation(currentState);
       if (data) {
         addTourList(data);
       }
