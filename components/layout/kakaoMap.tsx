@@ -4,7 +4,11 @@ import { getTourListBasedLocation } from "@/lib/getTourListBasedLocation";
 import { KakaoMapAddressResponseType } from "@/types/kakaoMapTypes";
 import { TourItemType } from "@/types/tourTypes";
 import Script from "next/script";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import marker_red from "@/asset/mapPin_red.png";
+import marker_blue from "@/asset/mapPin_blue.png";
+import { StaticImageData } from "next/image";
+import { useTourListStore } from "@/store/useTourListStore";
 
 declare global {
   interface Window {
@@ -12,17 +16,14 @@ declare global {
   }
 }
 
-interface KakaoMapProps {
-  tourList: TourItemType[] | "";
-  setTourList: Dispatch<SetStateAction<"" | TourItemType[]>>;
-  setCurrentAddress: Dispatch<SetStateAction<string>>;
-}
+export default function KakaoMap() {
+  const tourList = useTourListStore((state) => state.tourList);
+  const addTourList = useTourListStore((state) => state.addTourList);
+  const changePosition = useTourListStore((state) => state.changePosition);
+  const setCurrentAddress = useTourListStore(
+    (state) => state.setCurrentAddress,
+  );
 
-export default function KakaoMap({
-  tourList,
-  setTourList,
-  setCurrentAddress,
-}: KakaoMapProps) {
   const mapDivRef = useRef(null);
   const defaultPosition = { lat: 37.578611, lng: 126.977222 };
   const mapRef = useRef<any>(null);
@@ -30,11 +31,40 @@ export default function KakaoMap({
 
   // lat: 위도, lng: 경도
   // api에서 제공하는 변수 mapy: 위도, mapx: 경도
-  const drawMarker = (lat: number, lng: number) => {
+  const drawMarker = (
+    lat: number,
+    lng: number,
+    imageData: StaticImageData,
+    tour?: TourItemType,
+  ) => {
+    const markerImage = new window.kakao.maps.MarkerImage(
+      imageData.src,
+      new window.kakao.maps.Size(imageData.width, imageData.height),
+      {
+        offset: new window.kakao.maps.Point(
+          imageData.width / 2,
+          imageData.height,
+        ),
+      },
+    );
     const marker = new window.kakao.maps.Marker({
       position: new window.kakao.maps.LatLng(lat, lng),
+      image: markerImage,
+      clickable: true,
     });
     marker.setMap(mapRef.current);
+
+    if (!tour) return;
+    const content = `<div>${tour.title}</div>`;
+    const infowindow = new window.kakao.maps.InfoWindow({
+      position: new window.kakao.maps.LatLng(lat, lng),
+      content: content,
+      removable: true,
+    });
+
+    window.kakao.maps.event.addListener(marker, "click", function () {
+      infowindow.open(mapRef.current, marker);
+    });
   };
 
   const moveMap = (lat: number, lng: number) => {
@@ -53,31 +83,30 @@ export default function KakaoMap({
 
   const setAddress = (obj: KakaoMapAddressResponseType[]) => {
     const data = obj;
-    console.log(data);
     setCurrentAddress(data[0].address.address_name);
   };
 
   useEffect(() => {
     if (!isLoad) return;
 
-    const position = { lat: 0, lng: 0 };
     const fetch = async (lat: number, lng: number) => {
-      const data = await getTourListBasedLocation(lat, lng);
-      console.log(data);
-      setTourList(data);
+      changePosition(lat, lng);
+      const currentState = useTourListStore.getState().tourParam;
+      const data = await getTourListBasedLocation(currentState);
+      if (data) {
+        addTourList(data);
+      }
     };
 
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
-        position.lat = coords.latitude;
-        position.lng = coords.longitude;
         moveMap(coords.latitude, coords.longitude);
-        drawMarker(coords.latitude, coords.longitude);
-        fetch(position.lat, position.lng);
+        drawMarker(coords.latitude, coords.longitude, marker_blue);
+        fetch(coords.latitude, coords.longitude);
       },
       (error) => {
         console.log(error);
-        drawMarker(defaultPosition.lat, defaultPosition.lng);
+        drawMarker(defaultPosition.lat, defaultPosition.lng, marker_blue);
         fetch(defaultPosition.lat, defaultPosition.lng);
         getAddress(defaultPosition.lat, defaultPosition.lng, setAddress);
       },
@@ -88,7 +117,7 @@ export default function KakaoMap({
   useEffect(() => {
     if (!Array.isArray(tourList)) return;
     tourList.map((tour: TourItemType) => {
-      drawMarker(+tour.mapy, +tour.mapx);
+      drawMarker(+tour.mapy, +tour.mapx, marker_red, tour);
     });
   }, [tourList]);
 

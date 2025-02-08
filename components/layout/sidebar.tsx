@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import { LocateFixed } from "lucide-react";
@@ -6,20 +7,44 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  // SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
 } from "../ui/sidebar";
-import { TourItemType } from "@/types/tourTypes";
 import rectangleImg from "@/asset/rectangle.png";
+import { useInView } from "react-intersection-observer";
+import { useEffect } from "react";
+import { getTourListBasedLocation } from "@/lib/getTourListBasedLocation";
+import { useTourListStore } from "@/store/useTourListStore";
 
-interface SideBarProps {
-  tourList: TourItemType[] | "";
-  currentAddress: string;
-}
+export default function SideBar() {
+  const tourList = useTourListStore((state) => state.tourList);
+  const addTourList = useTourListStore((state) => state.addTourList);
+  const addPage = useTourListStore((state) => state.addPage);
+  const currentAddress = useTourListStore((state) => state.currentAddress);
 
-export default function SideBar({ tourList, currentAddress }: SideBarProps) {
+  const { ref: divRef, inView: divInView } = useInView({
+    threshold: 1,
+  });
+
+  useEffect(() => {
+    const fetch = async () => {
+      addPage();
+      const currentState = useTourListStore.getState().tourParam;
+      const data = await getTourListBasedLocation(currentState);
+      if (data) {
+        addTourList(data);
+      }
+    };
+
+    if (divInView) {
+      if (tourList.length > 0) {
+        fetch();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [divInView]);
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -28,12 +53,11 @@ export default function SideBar({ tourList, currentAddress }: SideBarProps) {
             <LocateFixed />
             <span className="pl-2">{currentAddress}</span>
           </strong>
-          <p>주변 관광지 목록을 확인해 보세요!</p>
+          <p>주변 관광지를 확인해 보세요!</p>
         </SidebarHeader>
         <SidebarGroup>
-          {/* <SidebarGroupLabel>주변 관광지</SidebarGroupLabel> */}
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="min-h-screen">
               {Array.isArray(tourList) &&
                 tourList.map((tour, index) => (
                   <SidebarMenuItem key={index} className="border-b">
@@ -55,6 +79,9 @@ export default function SideBar({ tourList, currentAddress }: SideBarProps) {
                     </Link>
                   </SidebarMenuItem>
                 ))}
+            </SidebarMenu>
+            <SidebarMenu>
+              <SidebarMenuItem ref={divRef} className="h-40"></SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

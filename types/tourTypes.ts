@@ -1,29 +1,29 @@
-export interface TourRootType {
-  response: TourResponseType;
-}
-
 export interface TourResponseType {
-  header: Header;
-  body: Body;
+  response: TourResponseContentType;
 }
 
-export interface Header {
+interface TourResponseContentType {
+  header: TourResponseHeaderType;
+  body: TourResponseBodyType;
+}
+
+interface TourResponseHeaderType {
   resultCode: string;
   resultMsg: string;
 }
 
-export interface Body {
-  items: TourItemsType;
+interface TourResponseBodyType {
+  items: TourResponseItemsType;
   numOfRows: number;
   pageNo: number;
   totalCount: number;
 }
 
-export interface TourItemsType {
-  item: TourItemType[] | "";
+interface TourResponseItemsType {
+  item: TourItemResponseType[] | "";
 }
 
-export interface TourItemType {
+interface TourItemResponseType {
   addr1: string;
   addr2: string;
   areacode: string;
@@ -45,4 +45,8 @@ export interface TourItemType {
   sigungucode: string;
   tel: string;
   title: string;
+}
+
+export interface TourItemType extends TourItemResponseType {
+  length?: number | undefined;
 }
