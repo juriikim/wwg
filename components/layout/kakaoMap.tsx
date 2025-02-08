@@ -9,6 +9,7 @@ import marker_red from "@/asset/mapPin_red.png";
 import marker_blue from "@/asset/mapPin_blue.png";
 import { StaticImageData } from "next/image";
 import { TourParamType } from "@/app/page";
+import { useTourListStore } from "@/store/useTourListStore";
 
 declare global {
   interface Window {
@@ -17,20 +18,19 @@ declare global {
 }
 
 interface KakaoMapProps {
-  tourList: TourItemType[] | "";
-  setTourList: Dispatch<SetStateAction<"" | TourItemType[]>>;
   setCurrentAddress: Dispatch<SetStateAction<string>>;
   tourParam: TourParamType;
   setTourParam: Dispatch<SetStateAction<TourParamType>>;
 }
 
 export default function KakaoMap({
-  tourList,
-  setTourList,
   setCurrentAddress,
   tourParam,
   setTourParam,
 }: KakaoMapProps) {
+  const tourList = useTourListStore((state) => state.tourList);
+  const addTourList = useTourListStore((state) => state.addTourList);
+
   const mapDivRef = useRef(null);
   const defaultPosition = { lat: 37.578611, lng: 126.977222 };
   const mapRef = useRef<any>(null);
@@ -108,8 +108,9 @@ export default function KakaoMap({
       };
       setTourParam(copy);
       const data = await getTourListBasedLocation(copy);
-      console.log(data);
-      setTourList(data);
+      if (data) {
+        addTourList(data);
+      }
     };
 
     navigator.geolocation.getCurrentPosition(

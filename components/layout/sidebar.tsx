@@ -11,48 +11,48 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from "../ui/sidebar";
-import { TourItemType } from "@/types/tourTypes";
 import rectangleImg from "@/asset/rectangle.png";
 import { useInView } from "react-intersection-observer";
 import { Dispatch, SetStateAction, useEffect } from "react";
 import { TourParamType } from "@/app/page";
 import { getTourListBasedLocation } from "@/lib/getTourListBasedLocation";
+import { useTourListStore } from "@/store/useTourListStore";
 
 interface SideBarProps {
-  tourList: TourItemType[] | "";
   currentAddress: string;
   tourParam: TourParamType;
   setTourParam: Dispatch<SetStateAction<TourParamType>>;
-  setTourList: Dispatch<SetStateAction<"" | TourItemType[]>>;
 }
 
 export default function SideBar({
-  tourList,
   currentAddress,
   tourParam,
   setTourParam,
-  setTourList,
 }: SideBarProps) {
+  const tourList = useTourListStore((state) => state.tourList);
+  const addTourList = useTourListStore((state) => state.addTourList);
+
   const { ref: divRef, inView: divInView } = useInView({
     threshold: 1,
   });
 
   useEffect(() => {
-    console.log(divInView);
+    const fetch = async () => {
+      const copy = tourParam;
+      copy.page = tourParam.page + 1;
+      setTourParam(copy);
+      const data = await getTourListBasedLocation(copy);
+      if (data) {
+        addTourList(data);
+      }
+    };
+
     if (divInView) {
-      const fetch = async () => {
-        const copy = tourParam;
-        copy.page = tourParam.page + 1;
-        setTourParam(copy);
-        const data = await getTourListBasedLocation(copy);
-        if (data.length > 0 && tourList.length > 0) {
-          setTourList([...tourList, ...data]);
-        }
-      };
-      if (tourList !== "") {
+      if (tourList.length > 0) {
         fetch();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [divInView]);
 
   return (

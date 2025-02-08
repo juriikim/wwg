@@ -1,14 +1,14 @@
-import { TourRootType } from "@/types/tourTypes";
+import { TourRequestType } from "@/types/apiRequestTypes";
 import { getTourApiUrl } from "./getTourApiUrl";
+import { TourResponseType } from "@/types/tourTypes";
 
 /** 파라미터로 준 위치 주변의 관광지 정보를 구하는 함수입니다.
- *
  * @param lat 위도
  * @param lng 경도
  * @param r 반경
  * @param page 페이지 번호
  * @param rows 개수
- * @returns 주변 관광지 정보보
+ * @returns TourItemResponseType[] | undefined
  */
 export const getTourListBasedLocation = async (params: {
   lat: number;
@@ -17,7 +17,7 @@ export const getTourListBasedLocation = async (params: {
   page: number;
   rows: number;
 }) => {
-  const requestParams = {
+  const requestParams: TourRequestType = {
     numOfRows: params.rows,
     _type: "json",
     pageNo: params.page,
@@ -32,6 +32,8 @@ export const getTourListBasedLocation = async (params: {
   };
   const url = getTourApiUrl("locationBasedList1", requestParams);
   const res = await fetch(url);
-  const data: TourRootType = await res.json();
-  return data.response.body.items.item ? data.response.body.items.item : "";
+  const data: TourResponseType = await res.json();
+  return data.response.body.items.item
+    ? data.response.body.items.item
+    : undefined;
 };
